@@ -19,6 +19,7 @@ lgb_params = {
     'is_unbalance': True,
     'max_bin': 256,
     'early_stopping_rounds': 500,
+    'verbose': -1,
 }
 
 if __name__ == '__main__':
@@ -33,19 +34,19 @@ if __name__ == '__main__':
     test_x = test.drop(['status'], axis=1)
     test_y = test['status']
 
-    train_data = lgb.Dataset(train_x, label=train_y)
-    test_data = lgb.Dataset(test_x, label=test_y)
+    train_data = lgb.Dataset(train_x, label=train_y, params={'verbose': -1}, free_raw_data=False)
+    test_data = lgb.Dataset(test_x, label=test_y, params={'verbose': -1}, free_raw_data=False)
 
     estimator = lgb.train(lgb_params,
                           train_data,
                           valid_sets=[test_data],
+                          verbose_eval=False,
                           )
 
     pred_test_y = estimator.predict(test_x)
-    print(pred_test_y)
 
     pred_labels = list(map(np.argmax, pred_test_y))
 
-    print(precision_score(test_y,pred_labels,average=None).mean())
-    print(confusion_matrix(test_y,pred_labels))
-    print(np.unique(pred_labels, return_counts=True))
+    print("precision:", precision_score(test_y,pred_labels,average=None).mean())
+    print("confusion matrix:", confusion_matrix(test_y,pred_labels))
+    print("np.unique (counts of predicted classes):", np.unique(pred_labels, return_counts=True))
